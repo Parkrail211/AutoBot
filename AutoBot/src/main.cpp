@@ -25,6 +25,10 @@
 
 using namespace vex;
 
+bool rollingOut = true;
+bool targetLocked = false;
+float margin = 5;
+
 float map(float inputValue, float a1, float a2, float b1, float b2) {
   float output = b1 + (((inputValue - a1) * (b2 - b1)) / (a2 - a1));
   return output;
@@ -36,7 +40,25 @@ float VisionMid(vex::vision::signature sig) {
   return output;
 }
 
+void targeting(vex::vision::signature sig) {
+  while (!targetLocked) {
+    if (VisionMid(sig) < -100 || VisionMid(sig) > 100) {
+      // spin right
+    } else if (VisionMid(sig) < 0) {
+      // spin left
+    } else if (VisionMid(sig) > 0) {
+      // spin right
+    }
+    else if (VisionMid(sig) < 0 + margin && VisionMid(sig) > 0 - margin) {
+      targetLocked = true;
+    }
+  }
+}
+
 int main() {
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
+
+  while (rollingOut) {
+  }
 }
