@@ -20,7 +20,6 @@
 // Vision               vision        13
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
-#include "Vision.h"
 #include "vex.h"
 
 using namespace vex;
@@ -41,16 +40,16 @@ float VisionMid(vex::vision::signature sig) {
 }
 
 void targeting(vex::vision::signature sig) {
+  Vision.takeSnapshot(sig);
   while (!targetLocked) {
-    if (VisionMid(sig) < -100 || VisionMid(sig) > 100) {
+    if (VisionMid(sig) < 0 + margin && VisionMid(sig) > 0 - margin) {
+      targetLocked = true;
+    } else if (VisionMid(sig) < -100 || VisionMid(sig) > 100) {
       // spin right
     } else if (VisionMid(sig) < 0) {
       // spin left
     } else if (VisionMid(sig) > 0) {
       // spin right
-    }
-    else if (VisionMid(sig) < 0 + margin && VisionMid(sig) > 0 - margin) {
-      targetLocked = true;
     }
   }
 }
@@ -60,5 +59,12 @@ int main() {
   vexcodeInit();
 
   while (rollingOut) {
+    if (Controller1.ButtonA.pressing()) {
+      targetLocked = false;
+    }
+    // use gps to grab distance from goal
+    // angle robot so its facing the goal
+    // move to the optimal distance
+    // shoot
   }
 }

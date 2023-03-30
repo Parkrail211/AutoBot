@@ -10,7 +10,7 @@ extern motor_group MotorsR;
 extern motor_group MotorsL;
 extern motor Finger;
 extern inertial Inertial;
-extern signature Vision__SIG_1;
+extern signature Vision__GOAL;
 extern signature Vision__SIG_2;
 extern signature Vision__SIG_3;
 extern signature Vision__SIG_4;
@@ -18,6 +18,7 @@ extern signature Vision__SIG_5;
 extern signature Vision__SIG_6;
 extern signature Vision__SIG_7;
 extern vision Vision;
+extern controller Controller1;
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.
