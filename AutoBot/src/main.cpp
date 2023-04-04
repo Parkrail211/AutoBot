@@ -26,7 +26,11 @@ using namespace vex;
 
 bool rollingOut = true;
 bool targetLocked = false;
-float margin = 5;
+float margin = 2;
+int speedTurn = 25;
+float Kp = speedTurn / 100;
+float Ki = 0.2;
+
 
 float map(float inputValue, float a1, float a2, float b1, float b2) {
   float output = b1 + (((inputValue - a1) * (b2 - b1)) / (a2 - a1));
@@ -40,16 +44,26 @@ float VisionMid(vex::vision::signature sig) {
 }
 
 void targeting(vex::vision::signature sig) {
+  float integral = 0;
   Vision.takeSnapshot(sig);
+
   while (!targetLocked) {
-    if (VisionMid(sig) < 0 + margin && VisionMid(sig) > 0 - margin) {
+     if (VisionMid(sig) < 0) {
+      MotorsR.spin(forward);
+      MotorsL.spin(forward);
+
+      while (VisionMid(sig) != 0) {
+        float error = 0 - VisionMid(sig);
+       integral = integral + error;
+
+       error = 0 ? integral = 0 : integral;
+
+       float speed = Kp*error + Ki*integral;
+
+       MotorsR.setVelocity(speed, percent);
+       MotorsL.setVelocity(-speed, percent);
+      }
       targetLocked = true;
-    } else if (VisionMid(sig) < -100 || VisionMid(sig) > 100) {
-      // spin right
-    } else if (VisionMid(sig) < 0) {
-      // spin left
-    } else if (VisionMid(sig) > 0) {
-      // spin right
     }
   }
 }
@@ -59,8 +73,10 @@ int main() {
   vexcodeInit();
 
   while (rollingOut) {
+
     if (Controller1.ButtonA.pressing()) {
       targetLocked = false;
+      targeting(Vision__GOAL);
     }
     // use gps to grab distance from goal
     // angle robot so its facing the goal
