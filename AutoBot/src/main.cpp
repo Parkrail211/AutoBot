@@ -1,38 +1,3 @@
-// ---- START VEXCODE CONFIGURED DEVICES ----
-// Robot Configuration:
-// [Name]               [Type]        [Port(s)]
-// Flywheel             motor_group   8, 17
-// MotorsR              motor_group   20, 16
-// MotorsL              motor_group   19, 18
-// Finger               motor         11
-// Inertial             inertial      14
-// Vision               vision        13
-// Controller1          controller
-// ---- END VEXCODE CONFIGURED DEVICES ----
-// ---- START VEXCODE CONFIGURED DEVICES ----
-// Robot Configuration:
-// [Name]               [Type]        [Port(s)]
-// Flywheel             motor_group   8, 17
-// MotorsR              motor_group   20, 16
-// MotorsL              motor_group   19, 18
-// Finger               motor         11
-// Inertial             inertial      14
-// Vision               vision        13
-// Controller1          controller
-// ---- END VEXCODE CONFIGURED DEVICES ----
-// ---- START VEXCODE CONFIGURED DEVICES ----
-// Robot Configuration:
-// [Name]               [Type]        [Port(s)]
-// Flywheel             motor_group   8, 17
-// MotorsR              motor_group   20, 16
-// MotorsL              motor_group   19, 18
-// Finger               motor         11
-// Inertial             inertial      14
-// Vision               vision        13
-// Controller1          controller
-// ---- END VEXCODE CONFIGURED DEVICES ----
-// Autobots, roll out!
-
 /*----------------------------------------------------------------------------*/
 /*                                                                            */
 /*    Module:       main.cpp                                                  */
@@ -62,7 +27,7 @@ bool targetLocked = false;
 float margin = 0.5;
 int maxTurnSpeed = 25;
 float Kp = 1;
-float Ki = 0.000000025;
+float Ki = 0.0000000000001;
 int midAdjust = -3;
 
 float map(float inputValue, float a1, float a2, float b1, float b2) {
@@ -83,7 +48,7 @@ void targeting(vex::vision::signature sig) {
     MotorsR.spin(forward);
     MotorsL.spin(forward);
 
-    while (!(VisionMid(sig) < midAdjust + margin && VisionMid(sig) > midAdjust - margin)) {
+    while ( !(VisionMid(sig) < 0 + margin && VisionMid(sig) < 0 + margin)) {
       Vision.takeSnapshot(sig);
       float error = 0 - VisionMid(sig);
       integral = integral + error;
@@ -92,18 +57,24 @@ void targeting(vex::vision::signature sig) {
         integral = 0;
       }
 
-      float speed = Kp * error + Ki * integral;
-      speed = map(speed, -100, 100, -maxTurnSpeed, maxTurnSpeed);
+      float speed = Kp * error;
+      speed = map(speed, -100, 100, -maxTurnSpeed, maxTurnSpeed) + Ki * integral;
 
       MotorsR.setVelocity(speed, percent);
       MotorsL.setVelocity(-speed, percent);
     }
     targetLocked = true;
     Controller1.Screen.print("target locked!");
+    MotorsL.stop();
+    MotorsR.stop();
   }
 }
+float distToSpeed(float feet) {
+  return -0.5* ((feet - 10) * (feet - 10)) + 80;
+}
 
-void shoot(int speed) {
+void shoot(float feet) {
+  float speed = distToSpeed(feet);
   Flywheel.setVelocity(speed, percent);
   Flywheel.spin(forward);
   vex::task::sleep(2000);
@@ -122,8 +93,8 @@ int main() {
 
     if (Controller1.ButtonA.pressing()) {
        targetLocked = false;
-       targeting(Vision__GOAL);
-      shoot(65);
+      
+      shoot(75);
     }
     // use gps to grab distance from goal
     // angle robot so its facing the goal
