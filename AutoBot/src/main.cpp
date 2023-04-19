@@ -1,3 +1,15 @@
+// ---- START VEXCODE CONFIGURED DEVICES ----
+// Robot Configuration:
+// [Name]               [Type]        [Port(s)]
+// Flywheel             motor_group   8, 17
+// MotorsR              motor_group   20, 16
+// MotorsL              motor_group   19, 18
+// Finger               motor         11
+// Inertial             inertial      14
+// Vision               vision        13
+// Controller1          controller
+// Distance             distance      2
+// ---- END VEXCODE CONFIGURED DEVICES ----
 /*----------------------------------------------------------------------------*/
 /*                                                                            */
 /*    Module:       main.cpp                                                  */
@@ -35,20 +47,29 @@ float map(float inputValue, float a1, float a2, float b1, float b2) {
   return output;
   // maps one value in a range to its corresponding value in another range
 }
+
 float VisionMid(vex::vision::signature sig) {
   Vision.takeSnapshot(sig);
-  float output = map(Vision.largestObject.centerX, 0, 315, 100, -100);
-  return output;
+  for (int i = 0; i < Vision.objectCount; i++) {
+    float mid = Vision.objects[i].centerX;
+    for (int j = 0; j < Vision.objectCount; j++) {
+      if(Vision.objects[i].centerX < mid + margin && Vision.objects[i].centerX > mid - margin && i != j) {
+        return map(mid, 315, 0, -100, 100);
+      }
+    }
+  }
+  return 100;
 }
 
 void targeting(vex::vision::signature sig) {
-
+  targetLocked = false;
   if (!targetLocked) {
     float integral = 0;
     MotorsR.spin(forward);
     MotorsL.spin(forward);
-
-    while ( !(VisionMid(sig) < 0 + margin && VisionMid(sig) < 0 + margin)) {
+//problem line V
+    while (!(VisionMid(sig) < 0 + margin && VisionMid(sig) > 0 - margin)) {
+      Controller1.Screen.clearScreen();
       Vision.takeSnapshot(sig);
       float error = 0 - VisionMid(sig);
       integral = integral + error;
@@ -58,29 +79,30 @@ void targeting(vex::vision::signature sig) {
       }
 
       float speed = Kp * error;
-      speed = map(speed, -100, 100, -maxTurnSpeed, maxTurnSpeed) + Ki * integral;
+      speed =
+          map(speed, -100, 100, -maxTurnSpeed, maxTurnSpeed) + Ki * integral;
 
       MotorsR.setVelocity(speed, percent);
       MotorsL.setVelocity(-speed, percent);
     }
     targetLocked = true;
-    Controller1.Screen.print("target locked!");
+    Controller1.Screen.print("target locked");
     MotorsL.stop();
     MotorsR.stop();
   }
 }
-float distToSpeed(float feet) {
-  return -0.5* ((feet - 10) * (feet - 10)) + 80;
-}
 
-void shoot(float feet) {
-  float speed = distToSpeed(feet);
+void shoot(float speed) {
+
+  // converts distance from goal to how fast the flywheel needs to spin
   Flywheel.setVelocity(speed, percent);
   Flywheel.spin(forward);
   vex::task::sleep(2000);
+  // spin up time
   Finger.setVelocity(50, percent);
   Finger.spin(forward);
   vex::task::sleep(3000);
+  // pushes disks into flywheel
   Finger.stop();
   Flywheel.stop();
 }
@@ -88,17 +110,34 @@ void shoot(float feet) {
 int main() {
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
+  Inertial.calibrate();
 
   while (rollingOut) {
 
     if (Controller1.ButtonA.pressing()) {
-       targetLocked = false;
-      
-      shoot(75);
+
+      targeting(Vision__GOAL);
+
+      /*while (Distance.objectDistance(inches) != 4) {
+        Controller1.Screen.clearScreen();
+        Controller1.Screen.setCursor(1, 1);
+        Controller1.Screen.print("Distance: %f",
+                                 Distance.objectDistance(inches) / 12);
+        float inch = Distance.objectDistance(inches);
+        MotorsL.setVelocity(15, percent);
+        MotorsR.setVelocity(15, percent);
+        if (inch < 48) {
+          MotorsL.spin(reverse);
+          MotorsR.spin(reverse);
+
+        } else {
+          MotorsL.spin(forward);
+          MotorsR.spin(forward);
+        }
+      }
+      MotorsL.stop();
+      MotorsR.stop();
+      shoot(75);*/
     }
-    // use gps to grab distance from goal
-    // angle robot so its facing the goal
-    // move to the optimal distance
-    // shoot
   }
 }

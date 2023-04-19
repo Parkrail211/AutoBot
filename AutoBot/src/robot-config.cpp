@@ -24,6 +24,7 @@ signature Vision__GOAL = signature (1, 8047, 10521, 9284, -1203, -291, -746, 2.4
 vision Vision = vision (PORT13, 76, Vision__GOAL);
 /*vex-vision-config:end*/
 controller Controller1 = controller(primary);
+distance Distance = distance(PORT2);
 
 // VEXcode generated functions
 // define variable for remote controller enable/disable
