@@ -20,8 +20,8 @@ motor_group MotorsL = motor_group(MotorsLMotorA, MotorsLMotorB);
 motor Finger = motor(PORT11, ratio18_1, true);
 inertial Inertial = inertial(PORT14);
 /*vex-vision-config:begin*/
-signature Vision__GOAL = signature (1, 8047, 10521, 9284, -1203, -291, -746, 2.4, 0);
-vision Vision = vision (PORT13, 76, Vision__GOAL);
+signature Vision__GOAL = signature (1, 8047, 10521, 9284, -1203, -291, -746, 4.4, 0);
+vision Vision = vision (PORT13, 24, Vision__GOAL);
 /*vex-vision-config:end*/
 controller Controller1 = controller(primary);
 distance Distance = distance(PORT2);
